@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <vector>
 
-const int ROWS = 20;
-const int COLS = 20;
+const int DEFAULT_ROWS = 20;
+const int DEFAULT_COLS = 20;
 
 // Function to get single character input without waiting for the Enter key
 int getch() {
@@ -197,8 +197,8 @@ bool isLargerDigit(char current, char target) {
 int main() {
     int totalRows = 20;
     int totalCols = 20;
-    int displayRows = ROWS;
-    int displayCols = COLS;
+    int displayRows = DEFAULT_ROWS;
+    int displayCols = DEFAULT_COLS;
 
     std::vector<std::vector<char>> grid(totalRows, std::vector<char>(totalCols, '.'));
 
@@ -207,8 +207,8 @@ int main() {
 
     int rowOffset = 0;
     int colOffset = 0;
-    int rowEditableOffset = ROWS / 2;
-    int colEditableOffset = COLS / 2;
+    int rowEditableOffset = DEFAULT_ROWS / 2;
+    int colEditableOffset = DEFAULT_COLS / 2;
     bool running = true;
     int changeAllModeStep = 0;
     char changeAllFrom;
