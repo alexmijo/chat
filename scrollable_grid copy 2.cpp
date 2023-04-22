@@ -194,6 +194,27 @@ bool isLargerDigit(char current, char target) {
            (target > current);
 }
 
+void dropThrough(std::vector<std::vector<char>> &grid, char droppingChar, char droppedThroughChar) {
+    for (int c = 0; c < grid[0].size(); c++) {
+        int topRow = -1;
+        for (int r = 0; r < grid.size(); r++) {
+            if (grid[r][c] == droppingChar) {
+                if (topRow == -1) {
+                    topRow = r;
+                }
+            } else if (grid[r][c] == droppedThroughChar) {
+                if (topRow != -1) {
+                    grid[topRow][c] = droppedThroughChar;
+                    grid[r][c] = droppingChar;
+                    topRow = -1;
+                }
+            } else {
+                topRow = -1;
+            }
+        }
+    }
+}
+
 int main() {
     int totalRows = 20;
     int totalCols = 20;
@@ -212,6 +233,9 @@ int main() {
     bool running = true;
     int changeAllModeStep = 0;
     char changeAllFrom;
+    int changeDropModeStep = 0;
+    char droppingChar;
+    char droppedThroughChar;
 
     drawGrid(grid, rowOffset, colOffset, rowEditableOffset, colEditableOffset, displayRows,
              displayCols);
@@ -230,6 +254,16 @@ int main() {
                      displayCols);
             continue;
         }
+        switch (changeDropModeStep) {
+        case 2:
+            droppingChar = key;
+            changeDropModeStep = 3;
+            continue;
+        case 3:
+            droppedThroughChar = key;
+            changeDropModeStep = 1;
+            continue;
+        }
         const char currLocChar = grid[rowOffset + rowEditableOffset][colOffset + colEditableOffset];
 
         switch (key) {
@@ -238,6 +272,15 @@ int main() {
             break;
         case 'Q':
             loadState(grid, "state.txt", totalRows, totalCols, displayRows, displayCols);
+            break;
+        case 'x':
+            if (changeDropModeStep == 0) {
+                continue;
+            }
+            dropThrough(grid, droppingChar, droppedThroughChar);
+            break;
+        case 'z':
+            changeDropModeStep = 2;
             break;
         case 'r':
             std::cout << "Enter new number of rows: ";
