@@ -66,7 +66,8 @@ void saveState(const std::vector<std::vector<char>> &grid, const std::string &fi
                int totalRows, int totalCols, int displayRows, int displayCols) {
     std::ofstream outFile(filename);
     if (outFile.is_open()) {
-        outFile << totalRows << ' ' << totalCols << ' ' << displayRows << ' ' << displayCols << std::endl;
+        outFile << totalRows << ' ' << totalCols << ' ' << displayRows << ' ' << displayCols
+                << std::endl;
         for (int i = 0; i < grid.size(); ++i) {
             for (int j = 0; j < grid[i].size(); ++j) {
                 outFile << grid[i][j];
@@ -126,7 +127,6 @@ int countLiveNeighbors(const std::vector<std::vector<char>> &grid, int row, int 
     return count;
 }
 
-
 void applyGameOfLifeRules(std::vector<std::vector<char>> &grid) {
     std::vector<std::vector<char>> newGrid = grid;
     for (int i = 0; i < grid.size(); ++i) {
@@ -144,6 +144,11 @@ void applyGameOfLifeRules(std::vector<std::vector<char>> &grid) {
         }
     }
     grid = newGrid;
+}
+
+bool isLargerDigit(char current, char target) {
+    return (current >= '0' && current <= '9') && (target >= '0' && target <= '9') &&
+           (target > current);
 }
 
 int main() {
@@ -168,6 +173,7 @@ int main() {
 
     while (running) {
         int key = getch();
+        const char currLocChar = grid[rowOffset + rowEditableOffset][colOffset + colEditableOffset];
 
         switch (key) {
         case 'q':
@@ -197,31 +203,59 @@ int main() {
             changeDotsToAs(grid);
             break;
         case 'w':
+            if (isLargerDigit(
+                    currLocChar,
+                    grid[rowOffset + rowEditableOffset - 1][colOffset + colEditableOffset])) {
+                continue;
+            }
             if (rowEditableOffset > 0) {
                 --rowEditableOffset;
+                break;
             } else if (rowOffset > 0) {
                 --rowOffset;
+                break;
             }
-            break;
+            continue;
         case 's':
+            if (isLargerDigit(
+                    currLocChar,
+                    grid[rowOffset + rowEditableOffset + 1][colOffset + colEditableOffset])) {
+                continue;
+            }
             if (rowEditableOffset < displayRows - 1) {
                 ++rowEditableOffset;
+                break;
             } else if (rowOffset < totalRows - displayRows) {
                 ++rowOffset;
+                break;
             }
-            break;
+            continue;
         case 'a':
+            if (isLargerDigit(
+                    currLocChar,
+                    grid[rowOffset + rowEditableOffset][colOffset + colEditableOffset - 1])) {
+                continue;
+            }
             if (colEditableOffset > 0) {
                 --colEditableOffset;
+                break;
             } else if (colOffset > 0) {
                 --colOffset;
+                break;
             }
-            break;
+            continue;
         case 'd':
+            if (isLargerDigit(
+                    currLocChar,
+                    grid[rowOffset + rowEditableOffset][colOffset + colEditableOffset + 1])) {
+                continue;
+            }
             if (colEditableOffset < displayCols - 1) {
                 ++colEditableOffset;
+                break;
             } else if (colOffset < totalCols - displayCols) {
                 ++colOffset;
+                break;
             }
             break;
         default:
