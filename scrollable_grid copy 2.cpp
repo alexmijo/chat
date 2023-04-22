@@ -28,18 +28,51 @@ int getch() {
 
 void clearScreen() { std::system("clear"); }
 
-void drawGrid(const std::vector<std::vector<char>> &grid, int rowOffset, int colOffset,
-              int rowEditableOffset, int colEditableOffset, int displayRows, int displayCols) {
+enum class Color { RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE, DEFAULT };
+
+void colorPrint(char c, Color color) {
+    switch (color) {
+    case Color::RED:
+        std::cout << "\033[1;31m";
+        break;
+    case Color::GREEN:
+        std::cout << "\033[1;32m";
+        break;
+    case Color::BLUE:
+        std::cout << "\033[1;34m";
+        break;
+    case Color::YELLOW:
+        std::cout << "\033[1;33m";
+        break;
+    case Color::CYAN:
+        std::cout << "\033[1;36m";
+        break;
+    case Color::MAGENTA:
+        std::cout << "\033[1;35m";
+        break;
+    case Color::WHITE:
+        std::cout << "\033[1;37m";
+        break;
+    case Color::DEFAULT:
+    default:
+        std::cout << "\033[0m";
+        break;
+    }
+    std::cout << c << "\033[0m ";
+}
+
+void drawGrid(const std::vector<std::vector<char>> &grid, int row_offset, int col_offset,
+              int row_editable_offset, int col_editable_offset, int display_rows,
+              int display_cols) {
     clearScreen();
-    for (int i = rowOffset; i < rowOffset + displayRows && i < grid.size(); ++i) {
-        for (int j = colOffset; j < colOffset + displayCols && j < grid[i].size(); ++j) {
-            if (i == rowOffset + rowEditableOffset && j == colOffset + colEditableOffset) {
-                std::cout << "\033[1;31m" << grid[i][j]
-                          << "\033[0m "; // Highlight the editable character in red
+    for (int i = row_offset; i < row_offset + display_rows && i < grid.size(); ++i) {
+        for (int j = col_offset; j < col_offset + display_cols && j < grid[i].size(); ++j) {
+            if (i == row_offset + row_editable_offset && j == col_offset + col_editable_offset) {
+                colorPrint(grid[i][j], Color::RED);
             } else if (grid[i][j] == '0') {
-                std::cout << "\033[1;32m" << grid[i][j] << "\033[0m "; // Display 0s in green
+                colorPrint(grid[i][j], Color::GREEN);
             } else if (grid[i][j] == '1') {
-                std::cout << "\033[1;34m" << grid[i][j] << "\033[0m "; // Display 1s in blue
+                colorPrint(grid[i][j], Color::BLUE);
             } else {
                 std::cout << grid[i][j] << ' ';
             }
@@ -99,11 +132,21 @@ void loadState(std::vector<std::vector<char>> &grid, const std::string &filename
     }
 }
 
-void changeDotsToAs(std::vector<std::vector<char>> &grid) {
+void changeAllOccurrences(std::vector<std::vector<char>> &grid, char old_char, char new_char) {
     for (int i = 0; i < grid.size(); ++i) {
         for (int j = 0; j < grid[i].size(); ++j) {
-            if (grid[i][j] == '.') {
-                grid[i][j] = 'A';
+            if (grid[i][j] == old_char) {
+                grid[i][j] = new_char;
+            }
+        }
+    }
+}
+
+void increaseAllDigits(std::vector<std::vector<char>> &grid) {
+    for (int i = 0; i < grid.size(); ++i) {
+        for (int j = 0; j < grid[i].size(); ++j) {
+            if (isdigit(grid[i][j]) && grid[i][j] != '9') {
+                grid[i][j]++;
             }
         }
     }
@@ -167,12 +210,26 @@ int main() {
     int rowEditableOffset = ROWS / 2;
     int colEditableOffset = COLS / 2;
     bool running = true;
+    int changeAllModeStep = 0;
+    char changeAllFrom;
 
     drawGrid(grid, rowOffset, colOffset, rowEditableOffset, colEditableOffset, displayRows,
              displayCols);
 
     while (running) {
         int key = getch();
+        switch (changeAllModeStep) {
+        case 1:
+            changeAllFrom = key;
+            changeAllModeStep = 2;
+            continue;
+        case 2:
+            changeAllOccurrences(grid, changeAllFrom, key);
+            changeAllModeStep = 0;
+            drawGrid(grid, rowOffset, colOffset, rowEditableOffset, colEditableOffset, displayRows,
+                     displayCols);
+            continue;
+        }
         const char currLocChar = grid[rowOffset + rowEditableOffset][colOffset + colEditableOffset];
 
         switch (key) {
@@ -200,10 +257,14 @@ int main() {
             std::cin.ignore(); // Ignore any remaining newline
             break;
         case 'b':
-            changeDotsToAs(grid);
+            changeAllModeStep = 1;
+            break;
+        case 'n':
+            increaseAllDigits(grid);
             break;
         case 'w':
-            if (isLargerDigit(
+            if (rowOffset + rowEditableOffset == 0 ||
+                isLargerDigit(
                     currLocChar,
                     grid[rowOffset + rowEditableOffset - 1][colOffset + colEditableOffset])) {
                 continue;
@@ -217,7 +278,8 @@ int main() {
             }
             continue;
         case 's':
-            if (isLargerDigit(
+            if (rowOffset + rowEditableOffset == totalRows - 1 ||
+                isLargerDigit(
                     currLocChar,
                     grid[rowOffset + rowEditableOffset + 1][colOffset + colEditableOffset])) {
                 continue;
@@ -231,7 +293,8 @@ int main() {
             }
             continue;
         case 'a':
-            if (isLargerDigit(
+            if (colOffset + colEditableOffset == 0 ||
+                isLargerDigit(
                     currLocChar,
                     grid[rowOffset + rowEditableOffset][colOffset + colEditableOffset - 1])) {
                 continue;
@@ -245,7 +308,8 @@ int main() {
             }
             continue;
         case 'd':
-            if (isLargerDigit(
+            if (colOffset + colEditableOffset == totalCols - 1 ||
+                isLargerDigit(
                     currLocChar,
                     grid[rowOffset + rowEditableOffset][colOffset + colEditableOffset + 1])) {
                 continue;
