@@ -289,8 +289,8 @@ void applyWeirdGameOfLifeRules(std::vector<std::vector<char>> &grid) {
             } else if (liveNeighbors == 3) {
                 if (grid[i][j] >= '1' && grid[i][j] <= '9') {
                     int c = grid[i][j] - '0';
-                    int randomValue = rand() % (c + 1);
-                    if (randomValue == 0) {
+                    int randomValue = rand() % (c + 2);
+                    if (randomValue <= 1) {
                         newGrid[i][j] = '0';
                     } else {
                         newGrid[i][j] = grid[i][j];
