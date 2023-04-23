@@ -277,22 +277,32 @@ void applyGameOfLifeRules(std::vector<std::vector<char>> &grid) {
     grid = newGrid;
 }
 
-// void applyGameOfLifeRules(std::vector<std::vector<char>> &grid) {
-//     std::vector<std::vector<char>> newGrid = grid;
-//     for (int i = 0; i < grid.size(); ++i) {
-//         for (int j = 0; j < grid[i].size(); ++j) {
-//             int liveNeighbors = countLiveNeighbors(grid, i, j);
-//             if (grid[i][j] == '0') {
-//                 if (liveNeighbors < 2 || liveNeighbors > 3) {
-//                     newGrid[i][j] = '.';
-//                 }
-//             } else if (liveNeighbors == 3 && grid[i][j] != '1') {
-//                 newGrid[i][j] = '0';
-//             }
-//         }
-//     }
-//     grid = newGrid;
-// }
+void applyWeirdGameOfLifeRules(std::vector<std::vector<char>> &grid) {
+    std::vector<std::vector<char>> newGrid = grid;
+    for (int i = 0; i < grid.size(); ++i) {
+        for (int j = 0; j < grid[i].size(); ++j) {
+            int liveNeighbors = countLiveNeighbors(grid, i, j);
+            if (grid[i][j] == '0') {
+                if (liveNeighbors < 2 || liveNeighbors > 3) {
+                    newGrid[i][j] = '.';
+                }
+            } else if (liveNeighbors == 3) {
+                if (grid[i][j] >= '1' && grid[i][j] <= '9') {
+                    int c = grid[i][j] - '0';
+                    int randomValue = rand() % (c + 1);
+                    if (randomValue == 0) {
+                        newGrid[i][j] = '0';
+                    } else {
+                        newGrid[i][j] = grid[i][j];
+                    }
+                } else {
+                    newGrid[i][j] = '0';
+                }
+            }
+        }
+    }
+    grid = newGrid;
+}
 
 bool isLargerDigit(char current, char target) {
     return (current >= '0' && current <= '9') && (target >= '0' && target <= '9') &&
@@ -397,9 +407,9 @@ int main() {
         case 'c':
             applyGameOfLifeRules(grid);
             break;
-        // case 'm':
-        //     applyWeirdGameOfLifeRules(grid);
-        //     break;
+        case 'm':
+            applyWeirdGameOfLifeRules(grid);
+            break;
         case 'v':
             std::cout << "Enter new number of display rows: ";
             std::cin >> displayRows;
